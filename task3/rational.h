@@ -13,14 +13,14 @@ struct rational
     rational &operator*=(rational const&);
     rational &operator/=(rational const&);
 
-    friend rational operator+(rational, rational const&);
-    friend rational operator-(rational, rational const&);
-    friend rational operator*(rational, rational const&);
-    friend rational operator/(rational, rational const&);
-
 private:
     int num;
     int den;
     
     void update();
 };
+
+rational operator+(rational, rational const&);
+rational operator-(rational, rational const&);
+rational operator*(rational, rational const&);
+rational operator/(rational, rational const&);
