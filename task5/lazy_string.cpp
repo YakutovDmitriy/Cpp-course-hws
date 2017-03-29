@@ -74,7 +74,7 @@ lazy_string lazy_string::substr(size_t offset) const
 
 lazy_string lazy_string::substr(size_t offset, size_t length) const
 {
-    if (offset + length >= len)
+    if (offset + length > len)
         throw std::range_error("wtf");
     return lazy_string(data, offset, length);
 }
