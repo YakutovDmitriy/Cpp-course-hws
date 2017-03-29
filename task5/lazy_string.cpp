@@ -89,10 +89,10 @@ void lazy_string::make_unique_copy()
 {
     if (!data.unique())
     {
-        std::shared_ptr<char> new_data(new char[len + 1]);
-        memcpy(new_data.get(), data.get() + offset, len);
-        new_data.get()[len] = 0;
-        data.swap(new_data);
+        char *cur = new char[len + 1];
+        memcpy(cur, data.get() + offset, len);
+        cur[len] = 0;
+        data.reset(cur);
         offset = 0;
     }
 }
