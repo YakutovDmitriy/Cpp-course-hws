@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#define max_size 160
+#define max_size 5160
 
 #ifdef LOCAL
 #  define err(...) fprintf(stderr, __VA_ARGS__)
