@@ -392,8 +392,8 @@ int main(int argc, char *argv[])
         return 0;
     }
     
-    setvbuf(stdout, NULL, _IONBF, 0);
-    setvbuf(stderr, NULL, _IONBF, 0);
+    //setvbuf(stdout, NULL, _IONBF, 0);
+    //setvbuf(stderr, NULL, _IONBF, 0);
 
     while (1)
     {
