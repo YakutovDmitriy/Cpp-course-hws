@@ -138,49 +138,6 @@ int correct_number(char *number)
     return 1;
 }
 
-int matches_number(char *user, char *a, int cnumber)
-{
-    if (!cnumber)
-        return 0;
-    return !strcmp(user, a);
-}
-
-int matches_name(char *user, char *a, int cname)
-{
-    if (!cname)
-        return 0;
-    int ulen = strlen(user);
-    int alen = strlen(a);
-    int start;
-    for (start = 0; start + alen <= ulen; ++start)
-    {
-        int match = 1;
-        int i, j;
-        for (i = start, j = 0; j < alen; ++i, ++j)
-            match &= tolower(user[i]) == tolower(a[j]);
-        if (match)
-            return 1;
-    }
-    return 0;
-}
-
-void find()
-{
-    char *a = read_string(stdin);
-    int cnumber = correct_number(a);
-    int cname = correct_name(a);
-    
-    char *b = NULL;
-    if (cnumber)
-        make_real_number(a, &b);
-    
-    struct user_t *cur;
-    for (cur = first_user; cur != NULL; cur = cur->next)
-        if (matches_number(cur->real_number, b, cnumber) || matches_name(cur->name, a, cname))
-            printf("%d %s %s\n", cur->id, cur->name, cur->number);
-    free(a);
-}
-
 void create()
 {
     char *name = read_string(stdin);
@@ -224,77 +181,6 @@ void create()
     free(name);
 }
 
-void delete()
-{
-    int id;
-    scanf("%d", &id);
-    struct user_t *cur;
-    struct user_t *prev = NULL;
-    
-    for (cur = first_user; cur != NULL; prev = cur, cur = cur->next)
-    {
-        if (cur->id == id)
-        {
-            if (prev != NULL)
-                prev->next = cur->next;
-            else
-                first_user = cur->next;
-            free(cur->name);
-            free(cur->number);
-            free(cur->real_number);
-            free(cur);
-            return;
-        }
-    }
-}
-
-void change()
-{
-    int id;
-    scanf("%d", &id);
-    char *type = read_string(stdin);
-    char *a = read_string(stdin);
-    if (!strcmp(type, "number"))
-    {
-        if (!correct_number(a))
-            return;
-        struct user_t *cur;
-        for (cur = first_user; cur != NULL; cur = cur->next)
-        {
-            if (cur->id == id)
-            {
-                free(cur->number);
-                int len = strlen(a);
-                cur->number = (char*) malloc(len + 1);
-                memcpy(cur->number, a, len);
-                cur->number[len] = '\0';
-                make_real_number(cur->number, &cur->real_number);
-                break;
-            }
-        }
-    }
-    else if (!strcmp(type, "name"))
-    {
-        if (!correct_name(a))
-            return;
-        struct user_t *cur;
-        for (cur = first_user; cur != NULL; cur = cur->next)
-        {
-            if (cur->id == id)
-            {
-                free(cur->name);
-                int len = strlen(a);
-                cur->name = (char*) malloc(len + 1);
-                memcpy(cur->name, a, len);
-                cur->name[len] = '\0';
-                break;
-            }
-        }
-    }
-    free(type);
-    free(a);
-}
-
 void free_all()
 {
     struct user_t *cur = first_user;
@@ -318,29 +204,10 @@ int main(int argc, char *argv[])
         load_book(argv[1]);
         char *com = (char*) malloc(max_size);
         scanf("%s", com);
-        if (!strcmp(com, "find"))
-        {
-            find();
-        }
-        else if (!strcmp(com, "create"))
+        if (!strcmp(com, "create"))
         {
             create();
             print_users(argv[1]);
-        }
-        else if (!strcmp(com, "delete"))
-        {
-            delete();
-            print_users(argv[1]);
-        }
-        else if (!strcmp(com, "change"))
-        {
-            change();
-            print_users(argv[1]);
-        }
-        else if (!strcmp(com, "exit"))
-        {
-            free_all();
-            break;
         }
         free_all();
         free(com);
