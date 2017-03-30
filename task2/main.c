@@ -146,7 +146,7 @@ void print_users(char *filename)
 int correct_name(char *name)
 {
     char *s;
-    for (s = name; *s; ++s)
+    for (s = name; s && *s; ++s)
         if (!isalpha(*s))
             return 0;
     return 1;
@@ -157,7 +157,7 @@ int correct_number(char *number)
     char *s;
     int was_left = 0;
     int was_right = 0;
-    for (s = number; *s; ++s)
+    for (s = number; s && *s; ++s)
     {
         int cur = isdigit(*s);
         cur |= s == number && *s == '+';
@@ -177,7 +177,7 @@ int correct_number(char *number)
         if (*s == '-')
         {
             bad |= s == number || !s[1];
-            bad |= s[-1] == '-' || s[1] == '-';
+            bad |= (s != number && s[-1] == '-') || s[1] == '-';
             cur = 1;
         }
         if (!cur || bad)
@@ -278,7 +278,7 @@ void create()
     else
     {
         last_user->next = user;
-        last_user = user;
+        last_user = last_user->next;
     }
     free(number);
     free(name);
@@ -286,7 +286,7 @@ void create()
 
 void delete()
 {
-    int id ;
+    int id;
     scanf("%d", &id);
     struct user_t *cur;
     struct user_t *prev = NULL;
