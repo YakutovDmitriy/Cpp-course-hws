@@ -5,12 +5,6 @@
 
 #define max_size 12312
 
-#ifdef LOCAL
-#  define err(...) fprintf(stderr, __VA_ARGS__)
-#else
-#  define err(...) {}
-#endif
-
 char *read_string(FILE *f)
 {
     int sz = 1;
@@ -92,8 +86,6 @@ void load_user(struct user_t **user, char *a)
     (*user)->next = NULL;
     (*user)->real_number = NULL;
     make_real_number((*user)->number, &((*user)->real_number));
-    
-    err("  user loaded: id=%d, name=%s, number=%s\n", (*user)->id, (*user)->name, (*user)->number);
 }
 
 struct user_t *first_user;
@@ -127,62 +119,22 @@ void load_book(char *filename)
 
 void print_users(char *filename)
 {
-    char *new_name = (char*) malloc(strlen(filename) + 6);
-    sprintf(new_name, "new_%s", filename);
-    
-    FILE *file = fopen(new_name, "w");
+    FILE *file = fopen(filename, "w");
     
     struct user_t *user;
     for (user = first_user; user != NULL; user = user->next)
         fprintf(file, "%d %s %s\n", user->id, user->name, user->number);
     
     fclose(file);
-    remove(filename);
-    rename(new_name, filename);
-    
-    free(new_name);
 }
 
 int correct_name(char *name)
 {
-    char *s;
-    for (s = name; s && *s; ++s)
-        if (!isalpha(*s))
-            return 0;
     return 1;
 }
 
 int correct_number(char *number)
 {
-    char *s;
-    int was_left = 0;
-    int was_right = 0;
-    for (s = number; s && *s; ++s)
-    {
-        int cur = isdigit(*s);
-        cur |= s == number && *s == '+';
-        int bad = 0;
-        if (*s == '(')
-        {
-            bad |= was_left;
-            was_left = 1;
-            cur = 1;
-        }
-        if (*s == ')')
-        {
-            bad |= was_right || !was_left;
-            was_right = 1;
-            cur = 1;
-        }
-        if (*s == '-')
-        {
-            bad |= s == number || !s[1];
-            bad |= (s != number && s[-1] == '-') || s[1] == '-';
-            cur = 1;
-        }
-        if (!cur || bad)
-            return 0;
-    }
     return 1;
 }
 
@@ -234,20 +186,8 @@ void create()
     char *name = read_string(stdin);
     char *number = read_string(stdin);
     
-    err("create user\n");
-    err("  name = '%s'\n", name);
-    err("  number = '%s'\n", number);
-    
-    if (!correct_name(name))
+    if (!correct_name(name) || !correct_number(number))
     {
-        printf("name should contain only letters\n");
-        free(number);
-        free(name);
-        return;
-    }
-    if (!correct_number(number))
-    {
-        printf("number should contain only digits, no more than one pair of parentheses and plus at the beggining\n");
         free(number);
         free(name);
         return;
@@ -306,8 +246,6 @@ void delete()
             return;
         }
     }
-    
-    err("can't find user with id = %d\n", id);
 }
 
 void change()
@@ -319,10 +257,7 @@ void change()
     if (!strcmp(type, "number"))
     {
         if (!correct_number(a))
-        {
-            err("  %s is incorrect number\n", a);
             return;
-        }
         struct user_t *cur;
         for (cur = first_user; cur != NULL; cur = cur->next)
         {
@@ -341,10 +276,7 @@ void change()
     else if (!strcmp(type, "name"))
     {
         if (!correct_name(a))
-        {
-            err("  %s is incorrect name\n", a);
             return;
-        }
         struct user_t *cur;
         for (cur = first_user; cur != NULL; cur = cur->next)
         {
@@ -358,11 +290,6 @@ void change()
                 break;
             }
         }
-    }
-    else
-    {
-        err("  change usage: change <id> number <new number>\n");
-        err("            or  change <id> name <new name>\n");
     }
     free(type);
     free(a);
@@ -386,21 +313,11 @@ void free_all()
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2)
-    {
-        puts("Usage: main.exe <filename>");
-        return 0;
-    }
-    
-    //setvbuf(stdout, NULL, _IONBF, 0);
-    //setvbuf(stderr, NULL, _IONBF, 0);
-
     while (1)
     {
         load_book(argv[1]);
         char *com = (char*) malloc(max_size);
         scanf("%s", com);
-        err("com = '%s'\n", com);
         if (!strcmp(com, "find"))
         {
             find();
@@ -424,16 +341,6 @@ int main(int argc, char *argv[])
         {
             free_all();
             break;
-        }
-        else
-        {
-            puts("Usage: one of the following commands");
-            puts("  find <number or part of name>");
-            puts("  create <name> <number>");
-            puts("  delete <id>");
-            puts("  change <id> number <number>");
-            puts("  change <id> name <name>");
-            puts("  exit");
         }
         free_all();
         free(com);
