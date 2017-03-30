@@ -368,11 +368,9 @@ int main(int argc, char *argv[])
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
-    load_book(argv[1]);
-    err("book is loaded\n");
-    
     while (1)
     {
+        load_book(argv[1]);
         char com[15];
         scanf("%s", com);
         err("com = '%s'\n", com);
@@ -409,6 +407,6 @@ int main(int argc, char *argv[])
             puts("  change <id> name <name>");
             puts("  exit");
         }
+        free_all();
     }
-    free_all();
 }
