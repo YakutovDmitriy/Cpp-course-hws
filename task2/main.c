@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#define max_size 5160
-
 #ifdef LOCAL
 #  define err(...) fprintf(stderr, __VA_ARGS__)
 #else
@@ -106,8 +104,9 @@ void load_book(char *filename)
     FILE *file = fopen(filename, "r");
     first_user = NULL;
     last_user = NULL;
-    static char a[max_size];
-    while (fgets(a, sizeof(a), file))
+    int is = 12312;
+    char *a = (char*) malloc(is);
+    while (fgets(a, is, file))
     {
         if (first_user == NULL)
         {
@@ -122,6 +121,7 @@ void load_book(char *filename)
         ++size;
     }
     fclose(file);
+    free(a);
 }
 
 void print_users(char *filename)
