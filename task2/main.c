@@ -151,4 +151,5 @@ int main(int argc, char *argv[])
         free(cmd);
         free_users();
     }
+    return 0;
 }
