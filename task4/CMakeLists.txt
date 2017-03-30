@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.3)
 
-add_defenitions("-std=c++11")
+add_definitions("-std=c++11")
 
 set(HEADERS format.h)
 set(SOURCES format.cpp)
