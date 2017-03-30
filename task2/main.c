@@ -34,7 +34,6 @@ char *read_string(FILE *file)
 {
     if (feof(file))
         return NULL;
-    fprintf(stderr, "start read string\n");
     size_t sz = 1;
     char *a = malloc(sizeof(char));
     char c;
@@ -82,7 +81,6 @@ void read_users()
     while (fscanf(file, "%d", &id) >= 0)
     {
         check_cap();
-        fprintf(stderr, "id = %d, size = %u, cap = %u\n", id, size, cap);
         users[size] = malloc(sizeof(user_t));
         users[size]->id = id;
         users[size]->name = read_string(file);
