@@ -11,6 +11,23 @@
 #  define err(...) {}
 #endif
 
+char *read_string(FILE *f)
+{
+    int sz = 1;
+    char *a = (char*) malloc(sz);
+    char c;
+    do {
+        c = fgetc(f);
+    } while(isspace(c));
+    while (!isspace(c)) {
+        a = (char*) realloc(a, ++sz);
+        a[sz - 2] = c;
+        c = fgetc(f);
+    }
+    a[sz - 1] = '\0';
+    return a;
+}
+
 struct user_t
 {
     int id;
@@ -196,8 +213,7 @@ int matches_name(char *user, char *a, int cname)
 
 void find()
 {
-    static char a[max_size];
-    scanf("%s", a);
+    char *a = read_string(stdin);
     int cnumber = correct_number(a);
     int cname = correct_name(a);
     
@@ -209,12 +225,13 @@ void find()
     for (cur = first_user; cur != NULL; cur = cur->next)
         if (matches_number(cur->real_number, b, cnumber) || matches_name(cur->name, a, cname))
             printf("%d %s %s\n", cur->id, cur->name, cur->number);
+    free(a);
 }
 
 void create()
 {
-    static char name[max_size], number[max_size];
-    scanf("%s%s", name, number);
+    char *name = read_string(stdin);
+    char *number = read_string(stdin);
     
     err("create user\n");
     err("  name = '%s'\n", name);
@@ -223,11 +240,15 @@ void create()
     if (!correct_name(name))
     {
         printf("name should contain only letters\n");
+        free(number);
+        free(name);
         return;
     }
     if (!correct_number(number))
     {
         printf("number should contain only digits, no more than one pair of parentheses and plus at the beggining\n");
+        free(number);
+        free(name);
         return;
     }
     
@@ -258,11 +279,13 @@ void create()
         last_user->next = user;
         last_user = user;
     }
+    free(number);
+    free(name);
 }
 
 void delete()
 {
-    int id;
+    int id ;
     scanf("%d", &id);
     struct user_t *cur;
     struct user_t *prev = NULL;
@@ -289,8 +312,9 @@ void delete()
 void change()
 {
     int id;
-    static char type[max_size], a[max_size];
-    scanf("%d%s%s", &id, type, a);
+    scanf("%d", &id);
+    char *type = read_string(stdin);
+    char *a = read_string(stdin);
     if (!strcmp(type, "number"))
     {
         if (!correct_number(a))
@@ -339,6 +363,8 @@ void change()
         err("  change usage: change <id> number <new number>\n");
         err("            or  change <id> name <new name>\n");
     }
+    free(type);
+    free(a);
 }
 
 void free_all()
@@ -395,6 +421,7 @@ int main(int argc, char *argv[])
         }
         else if (!strcmp(com, "exit"))
         {
+            free_all();
             break;
         }
         else
@@ -410,3 +437,4 @@ int main(int argc, char *argv[])
         free_all();
     }
 }
+    
