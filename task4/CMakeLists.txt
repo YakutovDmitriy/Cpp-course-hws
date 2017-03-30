@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.3)
 
+set(GCC_COVERAGE_COMPILE_FLAGS, "-std=c++11")
+
+add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
+
 set(HEADERS format.h)
 set(SOURCES format.cpp)
 add_library(format ${SOURCES} ${HEADERS})
