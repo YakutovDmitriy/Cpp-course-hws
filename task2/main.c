@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
     {
         read_users();
         char *cmd = read_string(stdin);
-        if (!strcmp(cmd, "create"))
+        if (strcmp(cmd, "create") == 0)
         {
             char *name = read_string(stdin);
             char *tel = read_string(stdin);
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
             create_user(name, tel, act_tel);
             write_users();
         }
-        else if (!strcmp(cmd, "exit"))
+        else if (!strcmp(cmd, "exit") == 0)
         {
             free(cmd);
             free_users();
