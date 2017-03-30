@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#define max_size 12312
+
 #ifdef LOCAL
 #  define err(...) fprintf(stderr, __VA_ARGS__)
 #else
@@ -104,9 +106,8 @@ void load_book(char *filename)
     FILE *file = fopen(filename, "r");
     first_user = NULL;
     last_user = NULL;
-    int is = 12312;
-    char *a = (char*) malloc(is);
-    while (fgets(a, is, file))
+    char *a = (char*) malloc(max_size);
+    while (fgets(a, max_size, file))
     {
         if (first_user == NULL)
         {
@@ -397,7 +398,7 @@ int main(int argc, char *argv[])
     while (1)
     {
         load_book(argv[1]);
-        char com[15];
+        char *com = (char*) malloc(max_size);
         scanf("%s", com);
         err("com = '%s'\n", com);
         if (!strcmp(com, "find"))
@@ -435,6 +436,7 @@ int main(int argc, char *argv[])
             puts("  exit");
         }
         free_all();
+        free(com);
     }
 }
     
