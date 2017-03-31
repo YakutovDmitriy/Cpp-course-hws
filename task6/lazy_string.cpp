@@ -2,6 +2,23 @@
 #include <exception>
 #include <cstring>
 
+lazy_string::reference::reference(lazy_string* outer, size_t index)
+    : outer(outer)
+    , index(index)
+{}
+
+lazy_string::reference &lazy_string::reference::operator=(char c)
+{
+    outer->make_unique_copy();
+    outer->data.get()[outer->offset + index] = c;
+    return *this;
+}
+
+lazy_string::reference::operator char() const
+{
+    return outer->data.get()[outer->offset + index];
+}
+
 lazy_string::lazy_string(std::string s)
 {
     char *cur = new char[s.size() + 1];
@@ -34,12 +51,11 @@ char lazy_string::at(size_t pos) const
     return data.get()[offset + pos];
 }
 
-char &lazy_string::at(size_t pos)
+lazy_string::reference lazy_string::at(size_t pos)
 {
     if (pos >= len)
         throw std::range_error("wtf");
-    make_unique_copy();
-    return data.get()[offset + pos];
+    return reference(this, pos);
 }
 
 char lazy_string::operator[](size_t pos) const
@@ -47,7 +63,7 @@ char lazy_string::operator[](size_t pos) const
     return at(pos);
 }
 
-char &lazy_string::operator[](size_t pos)
+lazy_string::reference lazy_string::operator[](size_t pos)
 {
     return at(pos);
 }

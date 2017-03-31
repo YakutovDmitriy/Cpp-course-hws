@@ -6,6 +6,20 @@
 
 struct lazy_string
 {
+    struct reference
+    {
+        friend struct lazy_string;
+    
+        reference &operator=(char);
+        operator char() const;
+    
+    private:
+        lazy_string *outer;
+        size_t index;
+    
+        reference(lazy_string*, size_t);
+    };
+
     lazy_string(std::string);
     operator std::string() const;
 
@@ -13,9 +27,9 @@ struct lazy_string
     size_t length() const;
     
     char at(size_t) const;
-    char &at(size_t);
+    reference at(size_t);
     char operator[](size_t) const;
-    char &operator[](size_t);
+    reference operator[](size_t);
     
     friend std::istream &operator>>(std::istream&, lazy_string&);
     friend std::ostream &operator<<(std::ostream&, lazy_string const&);
