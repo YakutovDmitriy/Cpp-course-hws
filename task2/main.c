@@ -229,6 +229,11 @@ int matches_name(char *user, char *a, int cname)
 void find()
 {
     char *a = read_string(stdin);
+    if (a == NULL)
+    {
+        err("find: a is null\n");
+        exit(0);
+    }
     int cnumber = correct_number(a);
     int cname = correct_name(a);
     
@@ -240,6 +245,7 @@ void find()
     for (cur = first_user; cur != NULL; cur = cur->next)
         if (matches_number(cur->real_number, b, cnumber) || matches_name(cur->name, a, cname))
             printf("%d %s %s\n", cur->id, cur->name, cur->number);
+    fflush(stdout);
     free(a);
 }
 
