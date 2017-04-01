@@ -49,9 +49,14 @@ char *read_string(FILE *file)
     do
     {
         c = fgetc(file);
+        if (feof(file))
+        {
+            out("return null read string while reading spaces\n");
+            return NULL;
+        }
     }
     while (isspace(c));
-    while (!isspace(c))
+    while (!feof(file) && !isspace(c))
     {
         ++sz;
         char *b = malloc(sizeof(char) * sz);
@@ -170,6 +175,13 @@ int main(int argc, char *argv[])
         out("start iteration");
         read_users();
         char *cmd = read_string(stdin);
+        if (cmd == NULL)
+        {
+            out("cmd is null");
+            free(cmd);
+            free_users();
+            break;
+        }
         out("cmd = %s\n", cmd);
         if (strcmp(cmd, "create") == 0)
         {
