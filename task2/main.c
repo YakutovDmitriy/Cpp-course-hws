@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#define max_size 12312
+#define max_size 24312
 
 #ifdef LOCAL
 #  define err(...) {fprintf(stderr, "$ " __VA_ARGS__); fflush(stderr);}
@@ -102,7 +102,7 @@ void load_user(struct user_t **user, char *a)
     (*user)->real_number = NULL;
     make_real_number((*user)->number, &((*user)->real_number));
     
-    err("  user loaded: id=%d, name=%s, number=%s\n", (*user)->id, (*user)->name, (*user)->number);
+    err("  user loaded: id=%d, name=%10s, number=%10s\n", (*user)->id, (*user)->name, (*user)->number);
 }
 
 struct user_t *first_user;
@@ -267,8 +267,8 @@ void create()
     }
     
     err("create user\n");
-    err("  name = '%s'\n", name);
-    err("  number = '%s'\n", number);
+    err("  name = '%10s'\n", name);
+    err("  number = '%10s'\n", number);
     
     if (!correct_name(name))
     {
@@ -449,6 +449,7 @@ int main(int argc, char *argv[])
     {
         load_book(argv[1]);
         char *com = (char*) malloc(max_size);
+        com = read_string(stdin);
         if (com == NULL)
         {
             err("com is null\n");
@@ -456,7 +457,6 @@ int main(int argc, char *argv[])
             free(com);
             break;
         }
-        scanf("%s", com);
         err("com = '%s'\n", com);
         if (!strcmp(com, "find"))
         {
