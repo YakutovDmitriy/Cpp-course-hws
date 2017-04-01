@@ -448,8 +448,7 @@ int main(int argc, char *argv[])
     while (1)
     {
         load_book(argv[1]);
-        char *com = (char*) malloc(max_size);
-        com = read_string(stdin);
+        char *com = read_string(stdin);
         if (com == NULL)
         {
             err("com is null\n");
