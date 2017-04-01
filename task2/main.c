@@ -4,8 +4,11 @@
 #include <ctype.h>
 #include <string.h>
 
-#define out(...) {printf(__VA_ARGS__); fflush(stdout);}
-
+#ifdef LOCAL
+#  define out(...) {printf(__VA_ARGS__); fflush(stdout);}
+#else
+#  define out(...)
+#endif
 
 typedef struct
 {
