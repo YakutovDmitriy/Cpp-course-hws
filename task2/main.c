@@ -74,10 +74,12 @@ char *make_act_tel(char *tel)
 
 void read_users()
 {
-    FILE *file = fopen(filename, "r");
     size = 0;
     cap = 0;
     int id;
+    FILE *file = fopen(filename, "r");
+    if (file == NULL)
+        return;
     while (fscanf(file, "%d", &id) >= 0)
     {
         check_cap();
@@ -103,7 +105,7 @@ void write_users()
 void free_users()
 {
     size_t i;
-    for (i = 0; i != size; i++)
+    for (i = 0; i != size; ++i)
     {
         free(users[i]->name);
         free(users[i]->tel);
@@ -111,6 +113,7 @@ void free_users()
         free(users[i]);
     }
     free(users);
+    cap = 0;
     size = 0;
 }
 
