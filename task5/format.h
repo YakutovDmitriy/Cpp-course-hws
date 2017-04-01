@@ -420,7 +420,7 @@ std::string format_impl(std::string const &fmt, size_t pos, size_t length_before
         if (nil_p[0] != '(' && cast_to<void*>(value) != NULL && cast_to<void*>(value) != nullptr)
             out << cast_to<void*>(value);
         else
-            out << "${NULL}";
+            out << "(nil)";
         ret += out.str();
         break;
     case 'n':
