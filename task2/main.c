@@ -79,7 +79,7 @@ void read_users()
     int id;
     FILE *file = fopen(filename, "r");
     if (file == NULL)
-        return;
+        file = fopen(filename, "a");
     while (fscanf(file, "%d", &id) >= 0)
     {
         check_cap();
