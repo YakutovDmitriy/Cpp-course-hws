@@ -143,13 +143,10 @@ void load_book(char *filename)
 
 void print_users(char *filename)
 {
-    char *new_name = (char*) malloc(strlen(filename) + 6);
-    sprintf(new_name, "new_%s", filename);
-    
-    FILE *file = fopen(new_name, "w");
+    FILE *file = fopen(filename, "w");
     if (file == NULL)
     {
-        printf("write users: file %s == NULL\n", new_name);
+        printf("write users: file %s == NULL\n", filename);
         exit(0);
     }
     
@@ -158,10 +155,6 @@ void print_users(char *filename)
         fprintf(file, "%d %s %s\n", user->id, user->name, user->number);
     
     fclose(file);
-    remove(filename);
-    rename(new_name, filename);
-    
-    free(new_name);
 }
 
 int correct_name(char *name)
