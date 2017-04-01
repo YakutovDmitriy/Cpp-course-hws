@@ -85,6 +85,7 @@ typename std::enable_if<!std::is_array<T>::value && !std::is_convertible<T, std:
         print_at(T& value)
 {
     std::string name(typeid(*value).name());
+    name = name == "Ss" ? "std::string" : "int";
     return value == 0 ? "nullptr<" + name + ">" : "ptr<" + name + ">(" + format("%@", *value) + ")";
 }
 
