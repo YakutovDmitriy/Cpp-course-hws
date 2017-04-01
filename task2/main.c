@@ -6,7 +6,7 @@
 #define max_size 12312
 
 #ifdef LOCAL
-#  define err(...) {fprintf(stdout, "$ " __VA_ARGS__); fflush(stdout);}
+#  define err(...) {fprintf(stderr, "$ " __VA_ARGS__); fflush(stderr);}
 #else
 #  define err(...) {}
 #endif
