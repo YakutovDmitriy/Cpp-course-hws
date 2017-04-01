@@ -113,6 +113,13 @@ void load_book(char *filename)
 {
     size = 0;
     FILE *file = fopen(filename, "r");
+    if (file == NULL)
+        file = fopen(filename, "a");
+    if (file == NULL)
+    {
+        printf("read users: file %s == NULL\n", filename);
+        exit(0);
+    }
     first_user = NULL;
     last_user = NULL;
     char *a = (char*) malloc(max_size);
@@ -140,6 +147,11 @@ void print_users(char *filename)
     sprintf(new_name, "new_%s", filename);
     
     FILE *file = fopen(new_name, "w");
+    if (file == NULL)
+    {
+        printf("write users: file %s == NULL\n", new_name);
+        exit(0);
+    }
     
     struct user_t *user;
     for (user = first_user; user != NULL; user = user->next)
