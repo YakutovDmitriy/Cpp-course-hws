@@ -1,207 +1,489 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+#define max_size 12312
 
 #ifdef LOCAL
-#  define out(...) {printf(__VA_ARGS__); fflush(stdout);}
+#  define err(...) {fprintf(stdout, "$ " __VA_ARGS__); fflush(stdout);}
 #else
-#  define out(...)
+#  define err(...) {}
 #endif
 
-typedef struct
+char *read_string(FILE *f)
 {
-    int id;
-    char *name;
-    char *tel;
-    char *act_tel;
-} user_t;
-
-user_t **users;
-size_t size;
-size_t cap;
-char *filename;
-
-void check_cap()
-{
-    out("start check cap\n");
-    if (cap == 0 || size == cap)
-    {
-        size_t new_cap = cap == 0 ? 1 : cap * 2;
-        user_t **new_users = malloc(sizeof(user_t*) * new_cap);
-        memcpy(new_users, users, size * sizeof(user_t*));
-        free(users);
-        cap = new_cap;
-        users = new_users;
-    }
-    out("end check cap\n");
-}
-
-char *read_string(FILE *file)
-{
-    out("start read string\n");
-    if (feof(file))
-    {
-        out("return null read string\n");
+    if (feof(f))
         return NULL;
-    }
-    size_t sz = 1;
-    char *a = malloc(sizeof(char));
+    int sz = 1;
+    char *a = (char*) malloc(sz);
     char c;
     do
     {
-        c = fgetc(file);
-        if (feof(file))
-        {
-            out("return null read string while reading spaces\n");
+        c = fgetc(f);
+        if (feof(f))
             return NULL;
-        }
     }
-    while (isspace(c));
-    while (!feof(file) && !isspace(c))
+    while(c != EOF && isspace(c));
+    if (c == EOF)
+        return NULL;
+    while (!feof(f) && c != EOF && !isspace(c))
     {
-        ++sz;
-        char *b = malloc(sizeof(char) * sz);
-        memcpy(b, a, sz - 1);
-        free(a);
-        a = b;
+        a = (char*) realloc(a, ++sz);
         a[sz - 2] = c;
-        c = fgetc(file);
+        c = fgetc(f);
     }
     a[sz - 1] = '\0';
-    out("end read string\n");
     return a;
 }
 
-char *make_act_tel(char *tel)
+struct user_t
 {
-    out("start make act tel\n");
-    size_t len = 0;
-    size_t i;
-    for (i = 0; tel[i]; ++i)
-        if (isdigit(tel[i]))
-            ++len;
-    char *ret = malloc(sizeof(char) * (len + 1));
-    ret[len] = 0;
-    len = 0;
-    for (i = 0; tel[i]; ++i)
-        if (isdigit(tel[i]))
-            ret[len++] = tel[i];
-    out("ok make act tel\n");
-    return ret;
+    int id;
+    char *name;
+    char *number;
+    char *real_number;
+    struct user_t *next;
+};
+
+void make_real_number(char *number, char **real_number)
+{
+    if (*real_number != NULL)
+        free(*real_number);
+    int digits = 0;
+    char *s;
+    for (s = number; *s; ++s)
+        if (isdigit(*s))
+            ++digits;
+    *real_number = (char*) malloc(digits + 1);
+    int i = 0;
+    for (s = number; *s; ++s)
+        if (isdigit(*s))
+            (*real_number)[i++] = *s;
+    (*real_number)[i] = '\0';
 }
 
-void read_users()
+void load_user(struct user_t **user, char *a)
 {
-    out("start read users\n");
+    *user = (struct user_t*) malloc(sizeof(struct user_t));
+    
+    while (isspace(*a))
+        ++a;
+    
+    int id = 0;
+    while (!isspace(*a))
+        id = 10 * id + *a++ - '0';
+    (*user)->id = id;
+    
+    while (isspace(*a))
+        ++a;
+
+    char *b = a;
+    while (!isspace(*b))
+        ++b;
+
+    (*user)->name = (char*) malloc(b - a + 1);
+    memcpy((*user)->name, a, b - a);
+    (*user)->name[b - a] = '\0';
+    
+    a = b;
+    while (isspace(*a))
+        ++a;
+        
+    b = a;
+    while (!isspace(*b))
+        ++b;
+    
+    (*user)->number = (char*) malloc(b - a + 1);
+    memcpy((*user)->number, a, b - a);
+    (*user)->number[b - a] = '\0';
+    
+    (*user)->next = NULL;
+    (*user)->real_number = NULL;
+    make_real_number((*user)->number, &((*user)->real_number));
+    
+    err("  user loaded: id=%d, name=%s, number=%s\n", (*user)->id, (*user)->name, (*user)->number);
+}
+
+struct user_t *first_user;
+struct user_t *last_user;
+int size = 0;
+
+void load_book(char *filename)
+{
     size = 0;
-    cap = 0;
-    int id;
     FILE *file = fopen(filename, "r");
-    if (file == NULL)
-        file = fopen(filename, "a");
-    if (file == NULL)
+    first_user = NULL;
+    last_user = NULL;
+    char *a = (char*) malloc(max_size);
+    while (fgets(a, max_size, file))
     {
-        out("read users: file %s == NULL\n", filename);
-        exit(0);
-    }
-    while (fscanf(file, "%d", &id) >= 0)
-    {
-        check_cap();
-        users[size] = malloc(sizeof(user_t));
-        users[size]->id = id;
-        users[size]->name = read_string(file);
-        users[size]->tel = read_string(file);
-        users[size]->act_tel = make_act_tel(users[size]->tel);
+        if (first_user == NULL)
+        {
+            load_user(&first_user, a);
+            last_user = first_user;
+        }
+        else
+        {
+            load_user(&last_user->next, a);
+            last_user = last_user->next;
+        }
         ++size;
     }
     fclose(file);
-    out("end read users\n");
+    free(a);
 }
 
-void write_users()
+void print_users(char *filename)
 {
-    out("start write users\n");
-    FILE *file = fopen(filename, "w");
-    if (file == NULL)
+    char *new_name = (char*) malloc(strlen(filename) + 6);
+    sprintf(new_name, "new_%s", filename);
+    
+    FILE *file = fopen(new_name, "w");
+    
+    struct user_t *user;
+    for (user = first_user; user != NULL; user = user->next)
+        fprintf(file, "%d %s %s\n", user->id, user->name, user->number);
+    
+    fclose(file);
+    remove(filename);
+    rename(new_name, filename);
+    
+    free(new_name);
+}
+
+int correct_name(char *name)
+{
+    char *s;
+    for (s = name; s && *s; ++s)
+        if (!isalpha(*s))
+            return 0;
+    return 1;
+}
+
+int correct_number(char *number)
+{
+    char *s;
+    int was_left = 0;
+    int was_right = 0;
+    for (s = number; s && *s; ++s)
     {
-        out("write users: file %s == NULL\n", filename);
+        int cur = isdigit(*s);
+        cur |= s == number && *s == '+';
+        int bad = 0;
+        if (*s == '(')
+        {
+            bad |= was_left;
+            was_left = 1;
+            cur = 1;
+        }
+        if (*s == ')')
+        {
+            bad |= was_right || !was_left;
+            was_right = 1;
+            cur = 1;
+        }
+        if (*s == '-')
+        {
+            bad |= s == number || !s[1];
+            bad |= (s != number && s[-1] == '-') || s[1] == '-';
+            cur = 1;
+        }
+        if (!cur || bad)
+            return 0;
+    }
+    return 1;
+}
+
+int matches_number(char *user, char *a, int cnumber)
+{
+    if (!cnumber)
+        return 0;
+    return !strcmp(user, a);
+}
+
+int matches_name(char *user, char *a, int cname)
+{
+    if (!cname)
+        return 0;
+    int ulen = strlen(user);
+    int alen = strlen(a);
+    int start;
+    for (start = 0; start + alen <= ulen; ++start)
+    {
+        int match = 1;
+        int i, j;
+        for (i = start, j = 0; j < alen; ++i, ++j)
+            match &= tolower(user[i]) == tolower(a[j]);
+        if (match)
+            return 1;
+    }
+    return 0;
+}
+
+void find()
+{
+    char *a = read_string(stdin);
+    int cnumber = correct_number(a);
+    int cname = correct_name(a);
+    
+    char *b = NULL;
+    if (cnumber)
+        make_real_number(a, &b);
+    
+    struct user_t *cur;
+    for (cur = first_user; cur != NULL; cur = cur->next)
+        if (matches_number(cur->real_number, b, cnumber) || matches_name(cur->name, a, cname))
+            printf("%d %s %s\n", cur->id, cur->name, cur->number);
+    free(a);
+}
+
+void create()
+{
+    char *name = read_string(stdin);
+    if (name == NULL)
+    {
+        err("create: name = null\n");
         exit(0);
     }
-    size_t i;
-    for (i = 0; i != size; ++i)
-        fprintf(file, "%d %s %s\n", users[i]->id, users[i]->name, users[i]->tel);
-    fclose(file);
-    out("end write users\n");
-}
-
-void free_users()
-{
-    out("start free users\n");
-    size_t i;
-    for (i = 0; i != size; ++i)
+    
+    char *number = read_string(stdin);
+    if (number == NULL)
     {
-        free(users[i]->name);
-        free(users[i]->tel);
-        free(users[i]->act_tel);
-        free(users[i]);
+        err("create: number = null\n");
+        free(name);
+        exit(0);
     }
-    free(users);
-    cap = 0;
-    size = 0;
-    out("end write users\n");
+    
+    err("create user\n");
+    err("  name = '%s'\n", name);
+    err("  number = '%s'\n", number);
+    
+    if (!correct_name(name))
+    {
+        printf("name should contain only letters\n");
+        free(number);
+        free(name);
+        return;
+    }
+    if (!correct_number(number))
+    {
+        printf("number should contain only digits, no more than one pair of parentheses and plus at the beggining\n");
+        free(number);
+        free(name);
+        return;
+    }
+    
+    struct user_t *user = (struct user_t*) malloc(sizeof(struct user_t));
+    user->id = ++size;
+    
+    int nlen = strlen(name);
+    user->name = (char*) malloc(nlen + 1);
+    memcpy(user->name, name, nlen);
+    user->name[nlen] = 0;
+    
+    nlen = strlen(number);
+    user->number = (char*) malloc(nlen + 1);
+    memcpy(user->number, number, nlen);
+    user->number[nlen] = 0;
+    
+    user->next = NULL;
+    user->real_number = NULL;
+    make_real_number(user->number, &user->real_number);
+    
+    if (first_user == NULL)
+    {
+        first_user = user;
+        last_user = user;
+    }
+    else
+    {
+        last_user->next = user;
+        last_user = last_user->next;
+    }
+    free(number);
+    free(name);
 }
 
-void create_user(char *name, char *tel, char *act_tel)
+void delete()
 {
-    out("start create user\n");
-    user_t *user = malloc(sizeof(user_t));
-    user->id = size + 1;
-    user->name = name;
-    user->tel = tel;
-    user->act_tel = act_tel;
-    check_cap();
-    users[size] = user;
-    ++size;
-    out("end create user\n");
+    int id;
+    if (scanf("%d", &id) < 0)
+    {
+        err("delete: scanf id < 0\n");
+        exit(0);
+    }
+    struct user_t *cur;
+    struct user_t *prev = NULL;
+    
+    for (cur = first_user; cur != NULL; prev = cur, cur = cur->next)
+    {
+        if (cur->id == id)
+        {
+            if (prev != NULL)
+                prev->next = cur->next;
+            else
+                first_user = cur->next;
+            free(cur->name);
+            free(cur->number);
+            free(cur->real_number);
+            free(cur);
+            return;
+        }
+    }
+    
+    err("can't find user with id = %d\n", id);
+}
+
+void change()
+{
+    int id;
+    if (scanf("%d", &id) < 0)
+    {
+        err("change: scanf id < 0\n");
+        exit(0);
+    }
+    char *type = read_string(stdin);
+    if (type == NULL)
+    {
+        err("change: type = null\n");
+        exit(0);
+    }
+    char *a = read_string(stdin);
+    if (a == NULL)
+    {
+        err("change: a = null\n");
+        exit(0);
+    }
+    if (!strcmp(type, "number"))
+    {
+        if (!correct_number(a))
+        {
+            err("  %s is incorrect number\n", a);
+            return;
+        }
+        struct user_t *cur;
+        for (cur = first_user; cur != NULL; cur = cur->next)
+        {
+            if (cur->id == id)
+            {
+                free(cur->number);
+                int len = strlen(a);
+                cur->number = (char*) malloc(len + 1);
+                memcpy(cur->number, a, len);
+                cur->number[len] = '\0';
+                make_real_number(cur->number, &cur->real_number);
+                break;
+            }
+        }
+    }
+    else if (!strcmp(type, "name"))
+    {
+        if (!correct_name(a))
+        {
+            err("  %s is incorrect name\n", a);
+            return;
+        }
+        struct user_t *cur;
+        for (cur = first_user; cur != NULL; cur = cur->next)
+        {
+            if (cur->id == id)
+            {
+                free(cur->name);
+                int len = strlen(a);
+                cur->name = (char*) malloc(len + 1);
+                memcpy(cur->name, a, len);
+                cur->name[len] = '\0';
+                break;
+            }
+        }
+    }
+    else
+    {
+        err("  change usage: change <id> number <new number>\n");
+        err("            or  change <id> name <new name>\n");
+    }
+    free(type);
+    free(a);
+}
+
+void free_all()
+{
+    struct user_t *cur = first_user;
+    while (cur != NULL)
+    {
+        struct user_t *next = cur->next;
+        free(cur->name);
+        free(cur->number);
+        free(cur->real_number);
+        free(cur);
+        cur = next;
+    }
+    first_user = NULL;
+    last_user = NULL;
 }
 
 int main(int argc, char *argv[])
 {
-    out("start main\n");
-    assert(argc > 1);
-    out("ok assert\n");
-    filename = argv[1];
+    if (argc < 2)
+    {
+        puts("Usage: main.exe <filename>");
+        return 0;
+    }
+    
+    //setvbuf(stdout, NULL, _IONBF, 0);
+    //setvbuf(stderr, NULL, _IONBF, 0);
+
     while (1)
     {
-        out("start iteration");
-        read_users();
-        char *cmd = read_string(stdin);
-        if (cmd == NULL)
+        load_book(argv[1]);
+        char *com = (char*) malloc(max_size);
+        if (com == NULL)
         {
-            out("cmd is null");
-            free(cmd);
-            free_users();
+            err("com is null\n");
+            free_all();
+            free(com);
             break;
         }
-        out("cmd = %s\n", cmd);
-        if (strcmp(cmd, "create") == 0)
+        scanf("%s", com);
+        err("com = '%s'\n", com);
+        if (!strcmp(com, "find"))
         {
-            char *name = read_string(stdin);
-            char *tel = read_string(stdin);
-            char *act_tel = make_act_tel(tel);
-            create_user(name, tel, act_tel);
-            write_users();
+            find();
         }
-        else if (!strcmp(cmd, "exit") == 0)
+        else if (!strcmp(com, "create"))
         {
-            free(cmd);
-            free_users();
+            create();
+            print_users(argv[1]);
+        }
+        else if (!strcmp(com, "delete"))
+        {
+            delete();
+            print_users(argv[1]);
+        }
+        else if (!strcmp(com, "change"))
+        {
+            change();
+            print_users(argv[1]);
+        }
+        else if (!strcmp(com, "exit"))
+        {
+            free_all();
+            free(com);
             break;
         }
-        free(cmd);
-        free_users();
+        else
+        {
+            puts("Usage: one of the following commands");
+            puts("  find <number or part of name>");
+            puts("  create <name> <number>");
+            puts("  delete <id>");
+            puts("  change <id> number <number>");
+            puts("  change <id> name <name>");
+            puts("  exit");
+        }
+        free_all();
+        free(com);
     }
     return 0;
 }
