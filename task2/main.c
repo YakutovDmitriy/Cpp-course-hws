@@ -4,7 +4,10 @@
 #include <ctype.h>
 #include <string.h>
 
-typedef struct __user_t
+#define out(...) {printf(__VA_ARGS__); fflush(stdout);}
+
+
+typedef struct
 {
     int id;
     char *name;
@@ -19,6 +22,7 @@ char *filename;
 
 void check_cap()
 {
+    out("start check cap\n");
     if (cap == 0 || size == cap)
     {
         size_t new_cap = cap == 0 ? 1 : cap * 2;
@@ -28,12 +32,17 @@ void check_cap()
         cap = new_cap;
         users = new_users;
     }
+    out("end check cap\n");
 }
 
 char *read_string(FILE *file)
 {
+    out("start read string\n");
     if (feof(file))
+    {
+        out("return null read string\n");
         return NULL;
+    }
     size_t sz = 1;
     char *a = malloc(sizeof(char));
     char c;
@@ -53,11 +62,13 @@ char *read_string(FILE *file)
         c = fgetc(file);
     }
     a[sz - 1] = '\0';
+    out("end read string\n");
     return a;
 }
 
 char *make_act_tel(char *tel)
 {
+    out("start make act tel\n");
     size_t len = 0;
     size_t i;
     for (i = 0; tel[i]; ++i)
@@ -69,11 +80,13 @@ char *make_act_tel(char *tel)
     for (i = 0; tel[i]; ++i)
         if (isdigit(tel[i]))
             ret[len++] = tel[i];
+    out("ok make act tel\n");
     return ret;
 }
 
 void read_users()
 {
+    out("start read users\n");
     size = 0;
     cap = 0;
     int id;
@@ -82,7 +95,7 @@ void read_users()
         file = fopen(filename, "a");
     if (file == NULL)
     {
-        printf("read users: file %s == NULL\n", filename);
+        out("read users: file %s == NULL\n", filename);
         exit(0);
     }
     while (fscanf(file, "%d", &id) >= 0)
@@ -96,24 +109,28 @@ void read_users()
         ++size;
     }
     fclose(file);
+    out("end read users\n");
 }
 
 void write_users()
 {
-    size_t i;
+    out("start write users\n");
     FILE *file = fopen(filename, "w");
     if (file == NULL)
     {
-        printf("write users: file %s == NULL\n", filename);
+        out("write users: file %s == NULL\n", filename);
         exit(0);
     }
+    size_t i;
     for (i = 0; i != size; ++i)
         fprintf(file, "%d %s %s\n", users[i]->id, users[i]->name, users[i]->tel);
     fclose(file);
+    out("end write users\n");
 }
 
 void free_users()
 {
+    out("start free users\n");
     size_t i;
     for (i = 0; i != size; ++i)
     {
@@ -125,10 +142,12 @@ void free_users()
     free(users);
     cap = 0;
     size = 0;
+    out("end write users\n");
 }
 
 void create_user(char *name, char *tel, char *act_tel)
 {
+    out("start create user\n");
     user_t *user = malloc(sizeof(user_t));
     user->id = size + 1;
     user->name = name;
@@ -137,16 +156,21 @@ void create_user(char *name, char *tel, char *act_tel)
     check_cap();
     users[size] = user;
     ++size;
+    out("end create user\n");
 }
 
 int main(int argc, char *argv[])
 {
+    out("start main\n");
     assert(argc > 1);
+    out("ok assert\n");
     filename = argv[1];
     while (1)
     {
+        out("start iteration");
         read_users();
         char *cmd = read_string(stdin);
+        out("cmd = %s\n", cmd);
         if (strcmp(cmd, "create") == 0)
         {
             char *name = read_string(stdin);
