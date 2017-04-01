@@ -80,6 +80,8 @@ void read_users()
     FILE *file = fopen(filename, "r");
     if (file == NULL)
         file = fopen(filename, "a");
+    if (file == NULL)
+        printf("read users: file %s == NULL\n", filename);
     while (fscanf(file, "%d", &id) >= 0)
     {
         check_cap();
@@ -97,6 +99,8 @@ void write_users()
 {
     size_t i;
     FILE *file = fopen(filename, "w");
+    if (file == NULL)
+        printf("write users: file %s == NULL\n", filename);
     for (i = 0; i != size; ++i)
         fprintf(file, "%d %s %s\n", users[i]->id, users[i]->name, users[i]->tel);
     fclose(file);
